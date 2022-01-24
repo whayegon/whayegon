@@ -1,0 +1,203 @@
+/* ==============================================================
+ STRUCTURE 
+context  (Module or View Member Ticket)
+    describe (USAC - User Story -- test scenario)
+         it (login)
+         it (test cases)
+ ============================================================== */ 
+ 
+/// <reference types="Cypress" />
+
+ // Login 
+ context('View Member Ticket', () => {
+
+
+   /* Cypress.on('uncaught:exception', (err, runnable) => {
+        // returning false here prevents Cypress from
+        // failing the test
+        return false
+      }); */
+     
+    // values to change when testing 
+
+        const ticketID = "END-32077";
+        const memberID = "80-00-00000-00002-00";
+        const dueDate = "Aug 07, 2020";
+        const Status = "Open";
+        const ticketOwner = "AO11 Last11";
+
+    describe(' As an APD Staff, I want to be able to view the tickets related to a member.', function() {  
+        it('Login', () => {
+            cy.login({ username: 'apd_encoder_user_4', password: '112233' })
+                .wait(6000);
+        });
+        it("go to members page", () => {
+            cy.contains("Members").click({ force: true });
+            cy.wait(5000);
+        });
+        it("search a member", () => {
+            cy.log("change member id to what you are currently testing");
+            cy.get("#members_search")
+                .type(memberID + "{enter}")
+                .wait(5000);
+            // open member details
+            cy.contains(memberID)
+                .click()
+                .wait(6000);
+        });
+    });
+
+// ============= USAC ID 479 ===================
+
+    describe('I should be able to click a Tickets link to view the tickets related to the member', () => {
+        it("click tickets", () => {
+            cy.get('[data-cy=view_member_tickets_item]')
+                .click()
+                .wait(6000);
+            cy.get('[class="MuiTypography-root-1258 title MuiTypography-body1-1260 MuiTypography-colorTextPrimary-1283"]')
+                .then (ticketLabel => {
+                expect(ticketLabel).contains("Tickets").should("be.visible")               
+            });
+        });          
+    });
+
+// ============= USAC ID 480 ===================
+
+    describe('I should be able to see the list of tickets related to that member.', () => {
+        it("check the ticket list", () => {
+            cy.get("tbody > tr").eq(1).contains("Closed").should("be.visible");
+        });
+    });
+
+// ============= USAC ID 481 ===================
+
+    describe('The table should be paginated, searchable, and filterable.', () => {
+    //paginated
+        it("check if table is paginated", () => {
+            cy.get('span[class="MuiIconButton-label-265"]').then (page => {
+                expect(page).to.be.visible
+        });
+      });
+    //searchable
+        it("check if table is searchable", () => {
+            cy.log("change Ticket ID to what you are currently testing");
+            cy.get("#cc_search_tickets_tf")
+                .type(ticketID + "{enter}")
+                .wait(6000);
+            cy.contains(ticketID).invoke('text').then ( text=> {
+                expect(text).to.equal(ticketID) 
+            cy.get("#cc_search_tickets_tf").clear();
+            cy.wait(4000);
+            });
+        });
+    //filterable
+        it("check if table is filterable", () => {
+            cy.log("change Ticket ID to what you are currently testing");
+            cy.get("#filter_input_ticketNo")
+                .type(ticketID + "{enter}")
+                .wait(6000);
+            cy.contains(ticketID).invoke('text').then ( text=> {
+                expect(text).to.equal(ticketID)
+            cy.get("#filter_input_ticketNo").clear();
+            cy.wait(6000);
+            });
+         });
+    });
+
+// ============= USAC ID 482 ===================
+
+    describe('I should be able to search or filter by ticket ID.', () => {
+    //search by Ticket ID
+        it("check search by ticket ID ", () => {
+            cy.log("change Ticket ID to what you are currently testing");
+            cy.get("#cc_search_tickets_tf")
+                .type(ticketID + "{enter}")
+                .wait(6000);
+            cy.contains(ticketID).invoke('text').then ( text=> {
+                expect(text).to.equal(ticketID)
+            cy.get("#cc_search_tickets_tf").clear();
+            cy.wait(4000);
+            });
+        });
+    //filter by Ticket ID
+        it("check filter by ticket ID", () => {
+            cy.log("change Ticket ID to what you are currently testing");
+            cy.get("#filter_input_ticketNo")
+                .type(ticketID + "{enter}")
+                .wait(6000);
+            cy.contains(ticketID).invoke('text').then ( text=> {
+                expect(text).to.equal(ticketID) 
+            cy.get("#filter_input_ticketNo").clear();
+            cy.wait(4000);
+            });
+        });
+    });
+
+// =============  USAC ID 483 ===================
+
+    describe('I should be able to filter by status.', () => {
+    //filter by Status
+        it("check filter by status", () => {
+            cy.log("change Status to what you are currently testing");
+            cy.get("#filter_input_ticketNo").clear();
+            cy.get('#filter_input_status')
+                .type(Status + "{enter}")
+                .wait(6000);
+            cy.contains(Status).invoke('text').then ( text=> {
+                expect(text).to.equal(Status)
+            cy.get("#filter_input_status").clear();
+            cy.wait(4000);
+            });
+         });
+      });
+
+// =============  USAC ID 484 ===================
+
+    describe('I should be able to filter by due date.', () => {
+    //filter by Due date - Type on Date Field
+        it("check filter by due date through user entered value on the date field", () => { 
+            cy.log("change Status to what you are currently testing")
+        //   cy.get('[data-cy=view_member_edit_member_btn]').scrollTo('Top')
+            cy.get('#filter_datepicker_due_date')
+                .type(dueDate + "{enter}")
+                .wait(6000);
+            cy.get("tbody > tr").eq(1).contains(dueDate).should("be.visible")
+            cy.get("#filter_datepicker_due_date").clear();
+            cy.wait(4000);
+        });
+
+    //filter by Due date - Date Picker
+        it("check filter by due date through date picker", () => { 
+            let dueDatelong = "August 07, 2020";
+            cy.log("change due date to what you are currently testing")
+            cy.get('.MuiPickersSlideTransition-transitionContainer-1918 > .MuiTypography-root-960').click()
+            cy.get('.MuiTypography-root-1020 MuiTypography-body1-1022 MuiTypography-alignCenter-1036')
+            .invoke('attr','label').then(dateTomatch => {
+                if(!dateTomatch == dueDate) {
+                    cy.get('.MuiPickersCalendarHeader-switchHeader-1913 > :nth-child(1) > .MuiIconButton-label-265 > .MuiSvgIcon-root-266')
+                        .click()
+                }
+                else {
+                    cy.get('.MuiDialogActions-root-1930 > :nth-child(2) > .MuiButton-label-1582')
+                        .click()
+                }
+            });
+        });
+    }); 
+// =============  USAC ID 485 ===================
+
+    describe('I should be able to  filter by ticket owner.', () => {
+        //filter by Ticket Owner
+        it("check filter by ticket owner", () => {
+            cy.log("change Tickcet Owner to what you are currently testing");
+            cy.get('#filter_input_assignedTo')
+                .type(ticketOwner + "{enter}")
+                .wait(6000);
+            cy.contains(ticketOwner).invoke('text').then ( text=> {
+                expect(text).to.equal(ticketOwner)
+            cy.get('#filter_input_assignedTo').clear();
+            cy.wait(4000);
+            });
+        });
+    });     
+});
